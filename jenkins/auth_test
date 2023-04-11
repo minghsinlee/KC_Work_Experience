@@ -1,0 +1,49 @@
+// jenkinsfile qili-auth.jar prod_env
+// 依赖插件：maven,sshPublisher
+
+pipeline {
+    agent any
+    tools {
+        maven 'apache-maven-3.8.6'
+    }
+
+    stages {
+        stage('BUILD STAGE') {
+            steps {
+                sh 'mvn clean package -pl com.qili:qili-auth -am -DskipTests -P test'
+            }
+        }
+    }
+    post {
+        success {
+            archiveArtifacts artifacts: '**/qili-auth/target/qili-auth.jar', followSymlinks: false
+            sshPublisher(publishers: [sshPublisherDesc(configName: 'test_env', transfers: [sshTransfer(cleanRemote: false, excludes: '', execCommand: '''
+#/bin/bash
+set +e
+#指定基本变量设置
+workDir=/data/app/shili
+sDir=/data/jenkins_upload/upload
+appName=qili-auth.jar
+
+#停服务
+supervisorctl stop auth
+#备份旧包
+#/bin/mv ${workDir}/${appName}  ${workDir}/../backup/${appName}`date +%Y_%m%d_%H%M`
+#将新包移动到程序目录
+/bin/mv ${sDir}/${appName} ${workDir}
+#启动服务
+supervisorctl start auth
+''', execTimeout: 120000, flatten: false, makeEmptyDirs: false, noDefaultExcludes: false, patternSeparator: '[, ]+', remoteDirectory: 'upload/', remoteDirectorySDF: false, removePrefix: '/qili-auth/target/', sourceFiles: '**/qili-auth/target/qili-auth.jar')], usePromotionTimestamp: false, useWorkspaceInPromotion: false, verbose: false)])
+            cleanWs()
+            echo '更新完成'
+        }
+        failure {
+            cleanWs()
+            echo '更新失败'
+        }
+        unstable {
+            cleanWs()
+            echo '流程出现问题,详情查看日志'
+        }
+    }
+}
