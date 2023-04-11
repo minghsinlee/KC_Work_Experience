@@ -1,0 +1,25 @@
+version: "3.8"
+services:
+ jenkins:
+  container_name: jenkins_cicd
+  image: jenkins/jenkins:latest
+  networks:
+  - link
+  restart: always
+  ports:
+  - 8080:8080
+  volumes:
+  - ./data/jenkins_home:/var/jenkins_home
+  - /etc/localtime:/etc/localtime:ro
+  environment:
+  - JENKINS_OPTS="--prefix=/jenkins"
+  - JAVA_OPTS=-Xms512m -Xmx1024m
+  deploy:
+   resources:
+    limits:
+     memory: 6G
+
+networks:
+ link:
+  external: true
+~
