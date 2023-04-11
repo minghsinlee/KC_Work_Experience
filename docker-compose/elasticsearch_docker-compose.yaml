@@ -26,3 +26,9 @@ services:
 networks:
  link:
   external: true
+--------------------------------
+# es配置文件  - ./bind/conf/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:
+
+cluster.name: docker-cluster
+network.host: 0.0.0.0
+xpack.security.enabled: false
