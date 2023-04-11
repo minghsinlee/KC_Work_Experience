@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+ mysql_qili:
+  container_name: mysql_qili
+  image: mysql:8
+  ports:
+  - 28311:3306
+  networks:
+  - link
+  restart: unless-stopped
+  environment:
+  - MYSQL_ROOT_PASSWORD=kcrootZAQ!@#
+  volumes:
+  - /etc/localtime:/etc/localtime:ro
+  - /data/docker-compose/mysql_qili/data:/var/lib/mysql
+  - /data/docker-compose/mysql_qili/conf/modify.cnf:/etc/mysql/conf.d/modify.cnf:ro
+  deploy:
+   resources:
+    limits:
+     memory: 500M
+  logging:
+   driver: json-file
+   options:
+    max-size: "5M"
+
+networks:
+ link:
+  external: true
+---------------------------------
+# 配置文件
+[mysqld]
+lower_case_table_names = 1
+slow_query_log = on
+innodb_file_per_table= on
+max_connections = 1000
